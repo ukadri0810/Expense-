@@ -13,6 +13,8 @@
         --success-bg: #d4edda;
         --success-text: #155724;
         --danger: #e74c3c;
+        --danger-bg: #f8d7da;
+        --danger-text: #721c24;
         --warning: #f39c12;
         --dark: #2c3e50;
         --gray: #7f8c8d;
@@ -36,7 +38,7 @@
         box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
     }
     h1 { text-align: center; color: var(--dark); margin: 0 0 5px 0; font-size: 1.8em; }
-    .subtitle { text-align: center; color: var(--gray); font-size: 0.9em; margin-bottom: 30px; }
+    .subtitle { text-align: center; color: var(--gray); font-size: 0.9em; margin-bottom: 25px; }
     
     .card { background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
     .card.safe-spend { 
@@ -44,14 +46,21 @@
         border: 1px solid #c3e6cb;
         color: var(--success-text); 
         text-align: center; 
-        padding: 25px; 
+        padding: 20px; 
         box-shadow: 0 4px 6px rgba(39, 174, 96, 0.1);
+        transition: all 0.3s ease;
+    }
+    .card.safe-spend.warning {
+        background: var(--danger-bg);
+        border-color: #f5c6cb;
+        color: var(--danger-text);
+        box-shadow: 0 4px 6px rgba(231, 76, 60, 0.1);
     }
     
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    .stat { padding: 15px; background: #fff; border-radius: 10px; border: 1px solid #edf2f7; text-align: center; }
-    .stat-title { font-size: 0.75em; color: var(--gray); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600;}
-    .stat-value { font-size: 1.4em; font-weight: 700; color: var(--dark); margin-top: 8px; }
+    .stat { padding: 12px; background: #fff; border-radius: 10px; border: 1px solid #edf2f7; text-align: center; }
+    .stat-title { font-size: 0.7em; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;}
+    .stat-value { font-size: 1.2em; font-weight: 700; color: var(--dark); margin-top: 6px; }
     
     button { 
         background: var(--primary); 
@@ -70,7 +79,6 @@
     button:active { transform: translateY(1px); }
     button.secondary { background: #cbd5e0; color: #4a5568; box-shadow: none; }
     button.action { background: #9b59b6; box-shadow: 0 2px 4px rgba(155, 89, 182, 0.2); }
-    button.danger { background: var(--danger); }
     
     .input-group { margin-bottom: 15px; }
     label { font-weight: 600; font-size: 0.9em; display: block; margin-bottom: 8px; color: var(--dark); }
@@ -87,32 +95,41 @@
     
     .hidden { display: none !important; }
     
-    .expense-list { margin-top: 30px; }
+    .expense-list { margin-top: 25px; }
     .list-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; margin-bottom: 15px;}
-    .list-header h3 { margin: 0; font-size: 1.2em; color: var(--dark);}
+    .list-header h3 { margin: 0; font-size: 1.1em; color: var(--dark);}
     .clear-data { font-size: 0.8em; color: var(--danger); cursor: pointer; background: none; border: none; width: auto; padding: 0; box-shadow: none; font-weight: normal; }
     
     .expense-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #fff; border-radius: 8px; border: 1px solid #edf2f7; margin-bottom: 8px; }
-    .expense-details strong { display: block; color: var(--dark); margin-bottom: 4px;}
-    .expense-details span { color: var(--gray); font-size: 0.85em; background: #edf2f7; padding: 2px 6px; border-radius: 4px;}
-    .expense-details small { color: #a0aec0; font-size: 0.75em; margin-left: 8px;}
-    .expense-amount { color: var(--danger); font-weight: 700; }
+    .expense-details strong { display: block; color: var(--dark); margin-bottom: 4px; font-size: 0.9em;}
+    .expense-details span { color: var(--gray); font-size: 0.8em; background: #edf2f7; padding: 2px 6px; border-radius: 4px;}
+    .expense-amount { color: var(--danger); font-weight: 700; font-size: 0.95em;}
     
-    .afford-result { text-align: center; font-size: 1.8em; font-weight: bold; margin-top: 20px; padding: 15px; border-radius: 10px;}
-    .afford-sub { font-size: 0.45em; font-weight: normal; color: var(--gray); display: block; margin-top: 8px; line-height: 1.4;}
+    .alert-banner {
+        background: #fff3cd;
+        color: #856404;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #ffeeba;
+        margin-bottom: 15px;
+        font-size: 0.9em;
+        font-weight: 500;
+        text-align: center;
+        display: none;
+    }
 </style>
 </head>
 <body>
 
 <div class="container">
     <h1>Smart Salary Planner</h1>
-    <div class="subtitle">Know your safe spend. Hit your goals.</div>
+    <div class="subtitle">Daily allowance tracking & safe spending</div>
 
     <!-- Onboarding / Setup Section -->
     <div id="setup-section" class="hidden">
         <div class="card" style="border-top: 4px solid var(--primary);">
-            <h2 style="margin-top:0; color: var(--dark);">Let's configure your month</h2>
-            <p style="color: var(--gray); font-size: 0.9em; margin-bottom: 20px;">We'll save this securely in your browser.</p>
+            <h2 style="margin-top:0; color: var(--dark); font-size: 1.3em;">Plan Your Month</h2>
+            <p style="color: var(--gray); font-size: 0.85em; margin-bottom: 20px;">Data saved securely on your device.</p>
 
             <div class="input-group">
                 <label>Monthly Salary (₹)</label>
@@ -127,14 +144,13 @@
 
             <div class="input-group">
                 <label>Monthly Savings Goal (₹)</label>
-                <span class="helper-text">Money you want to lock away safely.</span>
                 <input type="number" id="savings-input" placeholder="e.g. 10000" required>
             </div>
 
-            <div class="input-group">
-                <label>Fixed Monthly Expenses (₹)</label>
-                <span class="helper-text">Total for rent, EMI, Netflix, utilities, etc.</span>
-                <input type="number" id="fixed-expenses-input" placeholder="e.g. 15000" required>
+            <div class="input-group" style="background: #e8f4f8; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                <label style="color: var(--primary);">Expected Daily Allowance (₹)</label>
+                <span class="helper-text">Your target budget for daily chai, snacks, transit, etc.</span>
+                <input type="number" id="daily-allowance-input" placeholder="e.g. 150" required>
             </div>
             
             <button onclick="saveSetup()">Save & Start Planning</button>
@@ -144,63 +160,55 @@
     <!-- Main Dashboard Section -->
     <div id="dashboard-section" class="hidden">
         
+        <div id="daily-alert" class="alert-banner">
+            ⚠️ You have exceeded your daily allowance today!
+        </div>
+
+        <div class="card safe-spend" id="safe-spend-card">
+            <div class="stat-title" id="safe-spend-title">Today's Remaining Allowance</div>
+            <div class="stat-value" style="font-size: 2.8em; margin: 10px 0;" id="display-daily-remaining">₹0</div>
+            <div style="font-size: 0.85em; margin-top: 5px;">
+                Allowance Target: <strong id="display-allowance-target">₹0</strong>
+            </div>
+        </div>
+
+        <div class="grid" style="margin-bottom: 20px;">
+            <div class="stat">
+                <div class="stat-title">Big Purchase Fund</div>
+                <span class="helper-text" style="font-size:0.6em;">(For non-daily items)</span>
+                <div class="stat-value" id="display-big-fund">₹0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-title">Days Left</div>
+                <span class="helper-text" style="font-size:0.6em;" id="cycle-dates">until payday</span>
+                <div class="stat-value" id="display-days-left">0</div>
+            </div>
+        </div>
+
         <div class="grid">
-            <div class="stat">
-                <div class="stat-title">Net Salary</div>
-                <div class="stat-value" id="display-salary">₹0</div>
-            </div>
-            <div class="stat">
-                <div class="stat-title">Discretionary Budget</div>
-                <span class="helper-text" style="font-size:0.6em;">(After Savings & Fixed)</span>
-                <div class="stat-value" id="display-available">₹0</div>
-            </div>
-            <div class="stat">
-                <div class="stat-title">Spent (Variable)</div>
-                <div class="stat-value" style="color: var(--danger);" id="display-spent">₹0</div>
-            </div>
-            <div class="stat">
-                <div class="stat-title">Remaining Budget</div>
-                <div class="stat-value" style="color: var(--primary);" id="display-remaining">₹0</div>
-            </div>
-        </div>
-
-        <div class="card safe-spend" style="margin-top: 20px;">
-            <div class="stat-title" style="color: var(--success-text);">Today's Safe Spend</div>
-            <div class="stat-value" style="font-size: 3em; margin: 15px 0;" id="display-safe-spend">₹0</div>
-            <div class="stat-title" style="color: var(--success-text);">
-                Days Left in Cycle: <strong id="display-days-left" style="font-size:1.2em;">0</strong>
-            </div>
-            <div id="cycle-dates" style="font-size: 0.75em; margin-top: 8px; opacity: 0.8;"></div>
-        </div>
-
-        <div class="grid" style="margin-top: 20px;">
             <button onclick="toggleSection('add-expense-section')">+ Add Expense</button>
             <button onclick="toggleSection('afford-section')" class="action">Can I afford this?</button>
         </div>
 
         <!-- Add Expense Form -->
         <div id="add-expense-section" class="card hidden" style="margin-top: 20px; border-left: 4px solid var(--primary);">
-            <h3 style="margin-top:0;">Record Variable Expense</h3>
+            <h3 style="margin-top:0;">Record Expense</h3>
             
             <div class="input-group">
                 <label>What did you buy?</label>
-                <input type="text" id="expense-name" placeholder="e.g. Lunch with friends">
+                <input type="text" id="expense-name" placeholder="e.g. Snacks">
             </div>
             
             <div class="input-group">
                 <label>Amount (₹)</label>
-                <input type="number" id="expense-amount" placeholder="e.g. 450">
+                <input type="number" id="expense-amount" placeholder="e.g. 50">
             </div>
             
             <div class="input-group">
                 <label>Category</label>
-                <select id="expense-category">
-                    <option value="Food & Dining">Food & Dining</option>
-                    <option value="Transportation">Transportation</option>
-                    <option value="Shopping">Shopping</option>
-                    <option value="Entertainment">Entertainment</option>
-                    <option value="Health">Health</option>
-                    <option value="Other">Other</option>
+                <select id="expense-type">
+                    <option value="daily">Daily Allowance Item (Food/Transit)</option>
+                    <option value="big">Big Purchase (Clothes/Gadgets)</option>
                 </select>
             </div>
             
@@ -212,31 +220,23 @@
 
         <!-- Affordability Calculator -->
         <div id="afford-section" class="card hidden" style="margin-top: 20px; border-left: 4px solid #9b59b6;">
-            <h3 style="margin-top:0;">Impulse Check: Can I afford this?</h3>
-            
-            <div class="input-group">
-                <label>Item Name</label>
-                <input type="text" id="afford-name" placeholder="e.g. Smartwatch">
-            </div>
-            
+            <h3 style="margin-top:0;">Can I afford this big purchase?</h3>
             <div class="input-group">
                 <label>Price (₹)</label>
-                <input type="number" id="afford-price" placeholder="e.g. 5000">
+                <input type="number" id="afford-price" placeholder="e.g. 2000">
             </div>
-            
-            <button onclick="checkAffordability()" class="action">Calculate</button>
-            <div id="afford-result" class="afford-result hidden"></div>
-            
-            <button onclick="closeAffordability()" class="secondary" style="margin-top: 15px;">Close</button>
+            <button onclick="checkAffordability()" class="action">Check</button>
+            <div id="afford-result" style="text-align:center; font-weight:bold; margin-top:15px; font-size: 1.2em;"></div>
+            <button onclick="closeAffordability()" class="secondary" style="margin-top: 10px;">Close</button>
         </div>
 
         <!-- Expense History -->
         <div class="expense-list">
             <div class="list-header">
-                <h3>Recent Expenses</h3>
-                <button class="clear-data" onclick="resetAppData()">Reset All Data</button>
+                <h3>Today's Expenses</h3>
+                <button class="clear-data" onclick="resetAppData()">Reset App</button>
             </div>
-            <div id="expense-items"></div>
+            <div id="today-expense-items"></div>
         </div>
     </div>
 </div>
@@ -247,15 +247,12 @@
         salary: 0,
         creditDate: 1,
         savingsGoal: 0,
-        fixedExpenses: 0,
-        expenses: [], // Array of {id, name, amount, category, date}
-        lastSetupDate: null
+        dailyAllowanceTarget: 0,
+        expenses: [] // {id, name, amount, type, date}
     };
 
-    // Constants
-    const STORAGE_KEY = 'smart_salary_planner_data';
+    const STORAGE_KEY = 'smart_salary_planner_daily_v1';
 
-    // Initialize App
     function init() {
         const storedData = localStorage.getItem(STORAGE_KEY);
         if (storedData) {
@@ -269,28 +266,21 @@
         }
     }
 
-    // Save Setup Data
     function saveSetup() {
         const salary = parseFloat(document.getElementById('salary-input').value);
         const creditDate = parseInt(document.getElementById('credit-date-input').value);
         const savingsGoal = parseFloat(document.getElementById('savings-input').value);
-        const fixedExpenses = parseFloat(document.getElementById('fixed-expenses-input').value);
+        const dailyAllowance = parseFloat(document.getElementById('daily-allowance-input').value);
 
-        if (!salary || !creditDate || isNaN(savingsGoal) || isNaN(fixedExpenses)) {
-            alert("Please fill in all fields with valid numbers.");
-            return;
-        }
-        if (creditDate < 1 || creditDate > 31) {
-            alert("Credit date must be between 1 and 31.");
+        if (!salary || !creditDate || isNaN(savingsGoal) || isNaN(dailyAllowance)) {
+            alert("Please fill in all fields.");
             return;
         }
 
         appData.salary = salary;
         appData.creditDate = creditDate;
         appData.savingsGoal = savingsGoal;
-        appData.fixedExpenses = fixedExpenses;
-        appData.lastSetupDate = new Date().toISOString();
-        // Keep existing expenses if any, otherwise empty array
+        appData.dailyAllowanceTarget = dailyAllowance;
         appData.expenses = appData.expenses || []; 
 
         saveData();
@@ -300,178 +290,170 @@
         updateDashboard();
     }
 
-    // Core Logic: Calculate Dates and Budget
-    function calculateCycle() {
+    function getCycleInfo() {
         const today = new Date();
         const currentDay = today.getDate();
         let cycleStart, cycleEnd;
 
-        // Determine if we are before or after this month's credit date
         if (currentDay >= appData.creditDate) {
-            // We are in the current month's cycle
             cycleStart = new Date(today.getFullYear(), today.getMonth(), appData.creditDate);
             cycleEnd = new Date(today.getFullYear(), today.getMonth() + 1, appData.creditDate - 1);
         } else {
-            // We are in the previous month's cycle
             cycleStart = new Date(today.getFullYear(), today.getMonth() - 1, appData.creditDate);
             cycleEnd = new Date(today.getFullYear(), today.getMonth(), appData.creditDate - 1);
         }
 
-        // Calculate days left (including today)
+        const totalDaysInCycle = Math.ceil((cycleEnd - cycleStart) / (1000 * 3600 * 24)) + 1;
         const timeDiff = cycleEnd.getTime() - today.getTime();
-        let daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1; // +1 to include today
-        if (daysLeft < 1) daysLeft = 1; // Safeguard
+        let daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
+        if (daysLeft < 1) daysLeft = 1;
 
-        return { cycleStart, cycleEnd, daysLeft };
+        return { cycleStart, cycleEnd, daysLeft, totalDaysInCycle };
     }
 
-    // Update Dashboard UI
+    function isToday(dateString) {
+        const date = new Date(dateString);
+        const today = new Date();
+        return date.getDate() === today.getDate() &&
+               date.getMonth() === today.getMonth() &&
+               date.getFullYear() === today.getFullYear();
+    }
+
     function updateDashboard() {
-        const cycleInfo = calculateCycle();
+        const cycleInfo = getCycleInfo();
         
-        // Discretionary budget is Salary minus Savings and Fixed Expenses
-        const discretionaryBudget = appData.salary - appData.savingsGoal - appData.fixedExpenses;
-        
-        // Filter expenses for the current billing cycle only
+        // Filter expenses for current cycle
         const currentCycleExpenses = appData.expenses.filter(exp => {
             const expDate = new Date(exp.date);
-            return expDate >= cycleInfo.cycleStart && expDate <= new Date(cycleInfo.cycleEnd.setHours(23,59,59));
+            return expDate >= cycleInfo.cycleStart && expDate <= new Date(cycleInfo.cycleEnd).setHours(23,59,59);
         });
 
-        // Calculate total spent in current cycle
-        const spent = currentCycleExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-        const remaining = discretionaryBudget - spent;
-        
-        // Calculate safe spend
-        let safeSpend = remaining / cycleInfo.daysLeft;
-        if (safeSpend < 0) safeSpend = 0;
+        // 1. Calculate Daily Allowance status
+        const todaysDailyExpenses = currentCycleExpenses.filter(exp => isToday(exp.date) && exp.type === 'daily');
+        const spentToday = todaysDailyExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+        const dailyRemaining = appData.dailyAllowanceTarget - spentToday;
 
-        // Update DOM
-        document.getElementById('display-salary').innerText = '₹' + appData.salary.toLocaleString('en-IN');
-        document.getElementById('display-available').innerText = '₹' + discretionaryBudget.toLocaleString('en-IN');
-        document.getElementById('display-spent').innerText = '₹' + spent.toLocaleString('en-IN');
-        document.getElementById('display-remaining').innerText = '₹' + remaining.toLocaleString('en-IN');
+        // UI for Daily Allowance
+        const safeSpendCard = document.getElementById('safe-spend-card');
+        const alertBanner = document.getElementById('daily-alert');
+        const dailyDisplay = document.getElementById('display-daily-remaining');
+        const dailyTitle = document.getElementById('safe-spend-title');
         
-        document.getElementById('display-safe-spend').innerText = '₹' + Math.floor(safeSpend).toLocaleString('en-IN');
+        document.getElementById('display-allowance-target').innerText = `₹${appData.dailyAllowanceTarget}`;
+
+        if (dailyRemaining < 0) {
+            // Over budget
+            safeSpendCard.classList.add('warning');
+            alertBanner.style.display = 'block';
+            dailyDisplay.innerText = '-₹' + Math.abs(dailyRemaining);
+            dailyTitle.innerText = "Over Daily Limit By";
+        } else {
+            // On track
+            safeSpendCard.classList.remove('warning');
+            alertBanner.style.display = 'none';
+            dailyDisplay.innerText = '₹' + dailyRemaining;
+            dailyTitle.innerText = "Today's Remaining Allowance";
+        }
+
+        // 2. Calculate Big Purchase Fund
+        // Fund = Salary - Savings - (Total Days in Cycle * Daily Allowance Target) - Spent on Big Items so far
+        const totalReservedForDaily = cycleInfo.totalDaysInCycle * appData.dailyAllowanceTarget;
+        const bigItemsSpent = currentCycleExpenses.filter(exp => exp.type === 'big').reduce((sum, exp) => sum + exp.amount, 0);
+        
+        const bigPurchaseFund = appData.salary - appData.savingsGoal - totalReservedForDaily - bigItemsSpent;
+
+        document.getElementById('display-big-fund').innerText = '₹' + Math.max(0, bigPurchaseFund).toLocaleString('en-IN');
         document.getElementById('display-days-left').innerText = cycleInfo.daysLeft;
-        
-        const options = { month: 'short', day: 'numeric' };
-        document.getElementById('cycle-dates').innerText = `Cycle: ${cycleInfo.cycleStart.toLocaleDateString('en-IN', options)} - ${cycleInfo.cycleEnd.toLocaleDateString('en-IN', options)}`;
 
-        renderExpenses(currentCycleExpenses);
+        renderTodayExpenses(todaysDailyExpenses, currentCycleExpenses.filter(exp => isToday(exp.date) && exp.type === 'big'));
     }
 
-    // Add new expense
     function addExpense() {
         const name = document.getElementById('expense-name').value;
         const amount = parseFloat(document.getElementById('expense-amount').value);
-        const category = document.getElementById('expense-category').value;
+        const type = document.getElementById('expense-type').value;
         
         if(name.trim() !== '' && amount > 0) {
             const newExpense = {
                 id: Date.now().toString(),
                 name: name,
                 amount: amount,
-                category: category,
+                type: type,
                 date: new Date().toISOString()
             };
             
             appData.expenses.push(newExpense);
             saveData();
             
-            // Clear inputs
             document.getElementById('expense-name').value = '';
             document.getElementById('expense-amount').value = '';
             
             toggleSection('add-expense-section');
             updateDashboard();
         } else {
-            alert('Please enter a valid expense name and amount.');
+            alert('Enter valid name and amount.');
         }
     }
 
-    // Affordability Logic
     function checkAffordability() {
         const price = parseFloat(document.getElementById('afford-price').value);
-        const itemName = document.getElementById('afford-name').value || "this";
         const resultDiv = document.getElementById('afford-result');
         
-        if (!price || price <= 0) {
-            alert("Enter a valid price.");
-            return;
-        }
+        if (!price || price <= 0) return;
 
-        const discretionaryBudget = appData.salary - appData.savingsGoal - appData.fixedExpenses;
-        
-        // Calculate spent in current cycle
-        const cycleInfo = calculateCycle();
+        const cycleInfo = getCycleInfo();
         const currentCycleExpenses = appData.expenses.filter(exp => {
             const expDate = new Date(exp.date);
-            return expDate >= cycleInfo.cycleStart && expDate <= new Date(cycleInfo.cycleEnd.setHours(23,59,59));
+            return expDate >= cycleInfo.cycleStart && expDate <= new Date(cycleInfo.cycleEnd).setHours(23,59,59);
         });
-        const spent = currentCycleExpenses.reduce((sum, exp) => sum + exp.amount, 0);
         
-        const remaining = discretionaryBudget - spent;
-        
-        resultDiv.classList.remove('hidden');
-        
-        if (price <= remaining) {
-            const newRemaining = remaining - price;
-            const newSafeSpend = Math.floor(newRemaining / cycleInfo.daysLeft);
-            resultDiv.innerHTML = `YES ✅
-                <span class='afford-sub'>You have ₹${remaining.toLocaleString('en-IN')} left. <br>If you buy ${itemName}, your new daily safe spend will be <strong>₹${newSafeSpend.toLocaleString('en-IN')}</strong>.</span>`;
-            resultDiv.style.backgroundColor = "var(--success-bg)";
-            resultDiv.style.color = "var(--success-text)";
-            resultDiv.style.border = "1px solid #c3e6cb";
+        const totalReservedForDaily = cycleInfo.totalDaysInCycle * appData.dailyAllowanceTarget;
+        const bigItemsSpent = currentCycleExpenses.filter(exp => exp.type === 'big').reduce((sum, exp) => sum + exp.amount, 0);
+        const bigPurchaseFund = appData.salary - appData.savingsGoal - totalReservedForDaily - bigItemsSpent;
+
+        if (price <= bigPurchaseFund) {
+            resultDiv.innerHTML = `YES ✅<br><span style="font-size:0.6em; color:var(--gray); font-weight:normal;">You have enough in your Big Purchase Fund.</span>`;
+            resultDiv.style.color = "var(--success)";
         } else {
-            resultDiv.innerHTML = `NO ❌
-                <span class='afford-sub'>${itemName} costs ₹${price.toLocaleString('en-IN')}, but you only have ₹${remaining.toLocaleString('en-IN')} left in your discretionary budget. <br>Wait until your next salary on the ${appData.creditDate}th!</span>`;
-            resultDiv.style.backgroundColor = "#f8d7da";
-            resultDiv.style.color = "#721c24";
-            resultDiv.style.border = "1px solid #f5c6cb";
+            resultDiv.innerHTML = `NO ❌<br><span style="font-size:0.6em; color:var(--gray); font-weight:normal;">This will break your savings goal or daily allowance budget.</span>`;
+            resultDiv.style.color = "var(--danger)";
         }
     }
 
     function closeAffordability() {
         document.getElementById('afford-price').value = '';
-        document.getElementById('afford-name').value = '';
-        document.getElementById('afford-result').classList.add('hidden');
+        document.getElementById('afford-result').innerHTML = '';
         toggleSection('afford-section');
     }
 
-    // Render Expense List
-    function renderExpenses(currentExpenses) {
-        const listDiv = document.getElementById('expense-items');
+    function renderTodayExpenses(dailyExp, bigExp) {
+        const listDiv = document.getElementById('today-expense-items');
         listDiv.innerHTML = '';
         
-        if (currentExpenses.length === 0) {
-            listDiv.innerHTML = '<div class="expense-item" style="justify-content:center; color: var(--gray); font-style: italic;">No expenses in this cycle yet.</div>';
+        const allToday = [...dailyExp, ...bigExp].sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        if (allToday.length === 0) {
+            listDiv.innerHTML = '<div class="expense-item" style="justify-content:center; color: var(--gray); font-size:0.9em;">No expenses today yet.</div>';
             return;
         }
-
-        // Show expenses newest first
-        const recent = [...currentExpenses].sort((a, b) => new Date(b.date) - new Date(a.date));
         
-        recent.forEach(exp => {
-            const dateObj = new Date(exp.date);
-            const timeString = dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-            const dateString = dateObj.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' });
-            
+        allToday.forEach(exp => {
             const item = document.createElement('div');
             item.className = 'expense-item';
+            const badgeColor = exp.type === 'daily' ? '#3498db' : '#9b59b6';
+            const typeLabel = exp.type === 'daily' ? 'Daily' : 'Big Purchase';
+            
             item.innerHTML = `
                 <div class="expense-details">
                     <strong>${exp.name}</strong>
-                    <span>${exp.category}</span>
-                    <small>${dateString} at ${timeString}</small>
+                    <span style="background: ${badgeColor}20; color: ${badgeColor}; border: 1px solid ${badgeColor}40;">${typeLabel}</span>
                 </div>
-                <div class="expense-amount">-₹${exp.amount.toLocaleString('en-IN')}</div>
+                <div class="expense-amount">-₹${exp.amount}</div>
             `;
             listDiv.appendChild(item);
         });
     }
 
-    // Utility Functions
     function toggleSection(id) {
         document.getElementById(id).classList.toggle('hidden');
     }
@@ -481,21 +463,13 @@
     }
 
     function resetAppData() {
-        if(confirm("Are you sure you want to delete all data and start over? This cannot be undone.")) {
+        if(confirm("Delete all data and start over?")) {
             localStorage.removeItem(STORAGE_KEY);
-            appData = { salary: 0, creditDate: 1, savingsGoal: 0, fixedExpenses: 0, expenses: [], lastSetupDate: null };
-            
-            // Clear inputs
-            document.getElementById('salary-input').value = '';
-            document.getElementById('credit-date-input').value = '';
-            document.getElementById('savings-input').value = '';
-            document.getElementById('fixed-expenses-input').value = '';
-            
+            appData = { salary: 0, creditDate: 1, savingsGoal: 0, dailyAllowanceTarget: 0, expenses: [] };
             init();
         }
     }
 
-    // Boot App
     init();
 </script>
 </body>
