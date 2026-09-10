@@ -1,214 +1,312 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-    <meta name="theme-color" content="#2563eb" />
-    <meta name="description" content="Personal Expense Tracker PWA" />
-
-    <title>ExpensePilot</title>
-
-    <!-- PWA -->
-    <link rel="manifest" href="manifest.json" />
-
-    <!-- Icons -->
-    <link rel="icon" href="assets/icons/icon-192.png" />
-    <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
-
-    <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <style>
-        body {
-            background: #f8fafc;
-            font-family: Inter, system-ui, sans-serif;
-        }
-
-        .glass {
-            backdrop-filter: blur(10px);
-            background: rgba(255,255,255,0.8);
-        }
-
-        .card {
-            border-radius: 20px;
-            background: white;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Salary Planner</title>
+<style>
+    :root {
+        --primary: #3498db;
+        --primary-hover: #2980b9;
+        --success: #27ae60;
+        --success-bg: #d4edda;
+        --success-text: #155724;
+        --danger: #c0392b;
+        --dark: #2c3e50;
+        --gray: #7f8c8d;
+        --light-bg: #f4f7f6;
+    }
+    body { 
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        background: var(--light-bg); 
+        margin: 0; 
+        padding: 20px; 
+        color: #333; 
+    }
+    .container { 
+        max-width: 500px; 
+        margin: 0 auto; 
+        background: #fff; 
+        border-radius: 12px; 
+        padding: 25px; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+    }
+    h1 { text-align: center; color: var(--dark); margin-bottom: 5px; }
+    .subtitle { text-align: center; color: var(--gray); font-size: 0.85em; margin-bottom: 25px; }
+    
+    .card { background: #e8f4f8; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+    .card.safe-spend { background: var(--success-bg); color: var(--success-text); text-align: center; padding: 20px; }
+    
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .stat { padding: 12px; background: #fff; border-radius: 8px; border: 1px solid #eee; text-align: center; }
+    .stat-title { font-size: 0.85em; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-value { font-size: 1.3em; font-weight: bold; color: var(--dark); margin-top: 5px; }
+    
+    button { 
+        background: var(--primary); 
+        color: #fff; 
+        border: none; 
+        padding: 12px 15px; 
+        width: 100%; 
+        border-radius: 8px; 
+        font-size: 1em; 
+        font-weight: bold;
+        cursor: pointer; 
+        margin-top: 10px; 
+        transition: background 0.2s;
+    }
+    button:hover { background: var(--primary-hover); }
+    button.secondary { background: #95a5a6; }
+    button.secondary:hover { background: #7f8c8d; }
+    button.action { background: #9b59b6; }
+    button.action:hover { background: #8e44ad; }
+    
+    label { font-weight: 500; font-size: 0.9em; display: block; margin-top: 10px; color: var(--dark); }
+    input, select { 
+        width: 100%; 
+        padding: 12px; 
+        margin: 5px 0 10px 0; 
+        border: 1px solid #ddd; 
+        border-radius: 8px; 
+        box-sizing: border-box; 
+        font-size: 1em;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--primary); }
+    
+    .hidden { display: none; }
+    
+    .expense-list { margin-top: 25px; }
+    .expense-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
+    .expense-item:last-child { border-bottom: none; }
+    .expense-details strong { display: block; color: var(--dark); }
+    .expense-details span { color: var(--gray); font-size: 0.85em; }
+    .expense-amount { color: var(--danger); font-weight: bold; }
+    
+    .afford-result { text-align: center; font-size: 1.5em; font-weight: bold; margin-top: 15px; }
+    .afford-sub { font-size: 0.5em; font-weight: normal; color: var(--gray); display: block; margin-top: 5px; }
+</style>
 </head>
-
 <body>
 
-    <!-- App Container -->
-    <div id="app" class="min-h-screen">
+<div class="container">
+    <h1>Smart Salary Planner</h1>
+    <div class="subtitle">A better way to budget than Pranay_September_2026_Expense_Tracker_With_Daily_Budget.xlsx</div>
 
-        <!-- Header -->
-        <header class="bg-blue-600 text-white px-5 py-5 shadow-md">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-2xl font-bold">
-                        ExpensePilot
-                    </h1>
-                    <p class="text-sm opacity-90">
-                        Smart Salary Budget Tracker
-                    </p>
-                </div>
-
-                <button
-                    id="addExpenseBtn"
-                    class="bg-white text-blue-600 px-4 py-2 rounded-xl font-semibold">
-                    + Expense
-                </button>
-            </div>
-        </header>
-
-        <!-- Dashboard -->
-        <main class="p-4 space-y-4">
-
-            <!-- Summary -->
-            <section class="grid grid-cols-2 gap-4">
-
-                <div class="card p-4">
-                    <p class="text-gray-500 text-sm">
-                        Salary
-                    </p>
-
-                    <h2 class="text-2xl font-bold">
-                        ₹50,000
-                    </h2>
-                </div>
-
-                <div class="card p-4">
-                    <p class="text-gray-500 text-sm">
-                        Balance
-                    </p>
-
-                    <h2 class="text-2xl font-bold text-green-600">
-                        ₹31,500
-                    </h2>
-                </div>
-
-            </section>
-
-            <!-- Daily Budget -->
-            <section class="card p-5">
-
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h3 class="font-semibold text-lg">
-                            Today's Safe Budget
-                        </h3>
-
-                        <p class="text-gray-500 text-sm">
-                            Based on remaining days
-                        </p>
-                    </div>
-
-                    <div class="text-right">
-                        <p class="text-3xl font-bold text-blue-600">
-                            ₹850
-                        </p>
-                    </div>
-                </div>
-
-            </section>
-
-            <!-- Safe To Spend -->
-            <section class="card p-5">
-
-                <h3 class="font-semibold text-lg mb-3">
-                    Safe To Spend
-                </h3>
-
-                <div class="flex gap-2">
-                    <input
-                        type="number"
-                        placeholder="Enter amount"
-                        class="flex-1 border rounded-xl p-3 outline-none">
-
-                    <button
-                        class="bg-blue-600 text-white px-5 rounded-xl">
-                        Check
-                    </button>
-                </div>
-
-            </section>
-
-            <!-- Expense List -->
-            <section class="card p-5">
-
-                <div class="flex justify-between mb-4">
-                    <h3 class="font-semibold text-lg">
-                        Recent Expenses
-                    </h3>
-
-                    <span class="text-blue-600">
-                        View All
-                    </span>
-                </div>
-
-                <div class="space-y-3">
-
-                    <div class="flex justify-between">
-                        <span>Lunch</span>
-                        <span>₹120</span>
-                    </div>
-
-                    <div class="flex justify-between">
-                        <span>Fuel</span>
-                        <span>₹500</span>
-                    </div>
-
-                    <div class="flex justify-between">
-                        <span>Coffee</span>
-                        <span>₹60</span>
-                    </div>
-
-                </div>
-
-            </section>
-
-            <!-- Savings Goal -->
-            <section class="card p-5">
-
-                <div class="flex justify-between">
-                    <div>
-                        <h3 class="font-semibold">
-                            Savings Goal
-                        </h3>
-
-                        <p class="text-gray-500">
-                            Emergency Fund
-                        </p>
-                    </div>
-
-                    <div class="text-right">
-                        <p class="font-bold">
-                            ₹25,000 / ₹50,000
-                        </p>
-                    </div>
-                </div>
-
-                <div class="mt-4 w-full bg-gray-200 rounded-full h-3">
-                    <div
-                        class="bg-green-500 h-3 rounded-full"
-                        style="width:50%">
-                    </div>
-                </div>
-
-            </section>
-
-        </main>
-
+    <!-- Step 1: Initial Setup -->
+    <div id="setup-section">
+        <div class="card">
+            <h2>Welcome! Set your budget</h2>
+            <label>Monthly Salary (₹)</label>
+            <input type="number" id="salary-input" value="50000">
+            
+            <label>Savings Goal (₹)</label>
+            <input type="number" id="savings-input" value="10000">
+            
+            <label>Days in Month</label>
+            <input type="number" id="days-input" value="30">
+            
+            <button onclick="startPlanner()">Start Planning</button>
+        </div>
     </div>
 
-    <script>
-        if ("serviceWorker" in navigator) {
-            window.addEventListener("load", () => {
-                navigator.serviceWorker.register("sw.js");
-            });
-        }
-    </script>
+    <!-- Step 2: Main Dashboard -->
+    <div id="dashboard-section" class="hidden">
+        
+        <div class="grid">
+            <div class="stat">
+                <div class="stat-title">Salary</div>
+                <div class="stat-value" id="display-salary">₹0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-title">Available Budget</div>
+                <div class="stat-value" id="display-available">₹0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-title">Spent This Month</div>
+                <div class="stat-value" style="color: var(--danger);" id="display-spent">₹0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-title">Remaining</div>
+                <div class="stat-value" id="display-remaining">₹0</div>
+            </div>
+        </div>
 
+        <div class="card safe-spend" style="margin-top: 20px;">
+            <div class="stat-title" style="color: var(--success-text); font-weight: bold;">Today's Safe Spend</div>
+            <div class="stat-value" style="font-size: 2.5em; margin: 10px 0;" id="display-safe-spend">₹0</div>
+            <div class="stat-title" style="color: var(--success-text);">Days Left: <span id="display-days-left">0</span></div>
+        </div>
+
+        <div class="grid" style="margin-top: 20px;">
+            <button onclick="toggleSection('add-expense-section')">+ Add Expense</button>
+            <button onclick="toggleSection('afford-section')" class="action">Can I afford this?</button>
+        </div>
+
+        <!-- Add Expense Form (Hidden by default) -->
+        <div id="add-expense-section" class="card hidden" style="margin-top: 15px; border: 1px solid #3498db; background: #fff;">
+            <h3 style="margin-top:0;">Record an Expense</h3>
+            <label>Expense Name</label>
+            <input type="text" id="expense-name" placeholder="e.g. Lunch">
+            
+            <label>Amount (₹)</label>
+            <input type="number" id="expense-amount" placeholder="e.g. 150">
+            
+            <label>Category</label>
+            <select id="expense-category">
+                <option value="Food">Food & Dining</option>
+                <option value="Transport">Transportation</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Bills">Bills & Utilities</option>
+                <option value="Entertainment">Entertainment</option>
+            </select>
+            
+            <div class="grid">
+                <button onclick="addExpense()">Save</button>
+                <button onclick="toggleSection('add-expense-section')" class="secondary">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Affordability Calculator (Hidden by default) -->
+        <div id="afford-section" class="card hidden" style="margin-top: 15px; border: 1px solid #9b59b6; background: #fff;">
+            <h3 style="margin-top:0;">Can I afford this?</h3>
+            <label>What do you want to buy?</label>
+            <input type="text" id="afford-name" placeholder="e.g. New Shoes">
+            
+            <label>Price (₹)</label>
+            <input type="number" id="afford-price" placeholder="e.g. 3000">
+            
+            <button onclick="checkAffordability()" class="action">Check Now</button>
+            <div id="afford-result" class="afford-result"></div>
+            
+            <button onclick="closeAffordability()" class="secondary" style="margin-top: 15px;">Close</button>
+        </div>
+
+        <!-- Expense History -->
+        <div class="expense-list">
+            <h3 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">Recent Expenses</h3>
+            <div id="expense-items"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // State variables
+    let salary = 0;
+    let savingsGoal = 0;
+    let totalDays = 0;
+    let spent = 0;
+    let expenses = [];
+    
+    // Hardcoded for demo: assuming 12 days have passed so 18 days left out of 30
+    let daysPassed = 12; 
+
+    function startPlanner() {
+        salary = parseFloat(document.getElementById('salary-input').value) || 0;
+        savingsGoal = parseFloat(document.getElementById('savings-input').value) || 0;
+        totalDays = parseInt(document.getElementById('days-input').value) || 30;
+        
+        // Hide setup, show dashboard
+        document.getElementById('setup-section').classList.add('hidden');
+        document.getElementById('dashboard-section').classList.remove('hidden');
+        
+        updateDashboard();
+    }
+
+    function updateDashboard() {
+        let budgetAvailable = salary - savingsGoal;
+        let remaining = budgetAvailable - spent;
+        let daysLeft = totalDays - daysPassed;
+        if(daysLeft < 1) daysLeft = 1; // Prevent division by zero
+        
+        let safeSpend = remaining / daysLeft;
+
+        document.getElementById('display-salary').innerText = '₹' + salary.toLocaleString();
+        document.getElementById('display-available').innerText = '₹' + budgetAvailable.toLocaleString();
+        document.getElementById('display-spent').innerText = '₹' + spent.toLocaleString();
+        document.getElementById('display-remaining').innerText = '₹' + remaining.toLocaleString();
+        
+        document.getElementById('display-safe-spend').innerText = '₹' + Math.floor(safeSpend).toLocaleString();
+        document.getElementById('display-days-left').innerText = daysLeft;
+        
+        renderExpenses();
+    }
+
+    function addExpense() {
+        let name = document.getElementById('expense-name').value;
+        let amount = parseFloat(document.getElementById('expense-amount').value) || 0;
+        let category = document.getElementById('expense-category').value;
+        
+        if(name.trim() !== '' && amount > 0) {
+            expenses.push({ name, amount, category });
+            spent += amount;
+            
+            // Clear inputs
+            document.getElementById('expense-name').value = '';
+            document.getElementById('expense-amount').value = '';
+            
+            toggleSection('add-expense-section');
+            updateDashboard();
+        } else {
+            alert('Please enter a valid expense name and amount.');
+        }
+    }
+
+    function checkAffordability() {
+        let price = parseFloat(document.getElementById('afford-price').value) || 0;
+        let budgetAvailable = salary - savingsGoal;
+        let remaining = budgetAvailable - spent;
+        
+        let resultDiv = document.getElementById('afford-result');
+        if (price <= remaining) {
+            resultDiv.innerHTML = `YES ✅<span class='afford-sub'>You can afford this without breaking your savings goal!</span>`;
+            resultDiv.style.color = "var(--success)";
+        } else {
+            resultDiv.innerHTML = `NO ❌<span class='afford-sub'>This exceeds your remaining safe budget. Wait until next month!</span>`;
+            resultDiv.style.color = "var(--danger)";
+        }
+    }
+
+    function closeAffordability() {
+        document.getElementById('afford-price').value = '';
+        document.getElementById('afford-name').value = '';
+        document.getElementById('afford-result').innerHTML = '';
+        toggleSection('afford-section');
+    }
+
+    function toggleSection(id) {
+        let el = document.getElementById(id);
+        if(el.classList.contains('hidden')) {
+            el.classList.remove('hidden');
+        } else {
+            el.classList.add('hidden');
+        }
+    }
+
+    function renderExpenses() {
+        let listDiv = document.getElementById('expense-items');
+        listDiv.innerHTML = '';
+        
+        if (expenses.length === 0) {
+            listDiv.innerHTML = '<p style="color: #999; text-align: center; font-style: italic;">No expenses recorded yet.</p>';
+            return;
+        }
+
+        // Show expenses newest first
+        let recent = [...expenses].reverse();
+        
+        recent.forEach(exp => {
+            let item = document.createElement('div');
+            item.className = 'expense-item';
+            item.innerHTML = `
+                <div class="expense-details">
+                    <strong>${exp.name}</strong>
+                    <span>${exp.category}</span>
+                </div>
+                <div class="expense-amount">-₹${exp.amount.toLocaleString()}</div>
+            `;
+            listDiv.appendChild(item);
+        });
+    }
+</script>
 </body>
 </html>
