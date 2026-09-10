@@ -3,373 +3,527 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#2c3e50">
-<title>Auto Salary Planner</title>
+<meta name="theme-color" content="#1e293b">
+<title>Auto Planner Pro</title>
 <style>
     :root {
-        --primary: #3498db;
-        --success: #2ecc71;
-        --danger: #e74c3c;
-        --dark: #2c3e50;
-        --gray: #95a5a6;
-        --light: #ecf0f1;
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --success: #10b981;
+        --danger: #ef4444;
+        --dark: #0f172a;
+        --surface: #ffffff;
+        --background: #f1f5f9;
+        --text-muted: #64748b;
+        --border: #e2e8f0;
     }
-    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: #f8f9fa; margin: 0; padding: 15px; color: #333; }
-    .container { max-width: 500px; margin: 0 auto; }
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; }
+    body { background: var(--background); color: var(--dark); padding-bottom: 70px; -webkit-font-smoothing: antialiased; }
     
-    .header { text-align: center; margin-bottom: 20px; }
-    .header h1 { margin: 0; color: var(--dark); font-size: 1.5em; }
-    .header p { margin: 5px 0 0 0; color: var(--gray); font-size: 0.85em; }
-
-    .card { background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
     
-    /* Dynamic Daily Board */
-    .daily-board { text-align: center; color: #fff; transition: background 0.3s; position: relative; overflow: hidden;}
-    .daily-board.positive { background: linear-gradient(135deg, #27ae60, #2ecc71); }
-    .daily-board.negative { background: linear-gradient(135deg, #c0392b, #e74c3c); }
-    .daily-amount { font-size: 3.5em; font-weight: 800; margin: 10px 0; letter-spacing: -1px; }
-    .daily-label { font-size: 0.9em; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; }
-    .rollover-badge { background: rgba(255,255,255,0.2); display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; margin-top: 10px; }
-
+    .card { background: var(--surface); border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border); }
+    
+    h1, h2, h3 { color: var(--dark); margin-bottom: 10px; }
+    p { color: var(--text-muted); font-size: 0.9em; margin-bottom: 20px; line-height: 1.5; }
+    
+    /* Inputs */
+    .input-group { margin-bottom: 16px; }
+    label { display: block; font-size: 0.85em; font-weight: 600; color: var(--dark); margin-bottom: 6px; }
+    input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); font-size: 16px; background: #f8fafc; transition: all 0.2s; }
+    input:focus, select:focus { outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+    
+    /* Buttons */
+    button { width: 100%; padding: 14px; border-radius: 10px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    button.primary { background: var(--primary); color: white; }
+    button.primary:active { background: var(--primary-hover); transform: scale(0.98); }
+    button.secondary { background: #e2e8f0; color: var(--dark); }
+    button.outline { background: transparent; border: 2px solid var(--border); color: var(--dark); }
+    button.danger { background: #fee2e2; color: var(--danger); }
+    
+    /* Dynamic Board */
+    .board { text-align: center; color: white; padding: 30px 20px; position: relative; overflow: hidden; border: none; }
+    .board.positive { background: linear-gradient(135deg, #10b981, #059669); }
+    .board.negative { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    .board-amount { font-size: 3.5em; font-weight: 800; margin: 10px 0; letter-spacing: -1px; }
+    .board-label { font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; }
+    
+    /* Grids */
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .stat-box { background: var(--light); padding: 12px; border-radius: 12px; }
-    .stat-box label { display: block; font-size: 0.75em; color: var(--gray); text-transform: uppercase; margin-bottom: 4px;}
-    .stat-box .val { font-size: 1.2em; font-weight: bold; color: var(--dark); }
-
-    /* Quick Add Buttons */
-    .quick-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-    .quick-btn { 
-        background: #fff; border: 1px solid #e0e0e0; padding: 12px 5px; border-radius: 12px; 
-        text-align: center; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-    }
-    .quick-btn:active { transform: scale(0.95); background: var(--light); }
-    .quick-btn span { display: block; font-size: 1.2em; margin-bottom: 4px; }
-    .quick-btn small { font-size: 0.75em; color: var(--gray); font-weight: bold; }
-
-    input, select, button.primary-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 1em; margin-bottom: 12px; }
-    input, select { background: var(--light); border: 1px solid transparent; outline: none; }
-    input:focus { border-color: var(--primary); background: #fff; }
-    button.primary-btn { background: var(--primary); color: white; font-weight: bold; box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3); }
+    .stat-box { background: var(--background); padding: 15px; border-radius: 12px; }
+    .stat-box label { font-size: 0.75em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+    .stat-box .val { font-size: 1.25em; font-weight: bold; }
     
+    .quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .quick-btn { background: var(--surface); border: 1px solid var(--border); padding: 15px 10px; border-radius: 12px; text-align: center; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .quick-btn span { display: block; font-size: 1.5em; margin-bottom: 5px; }
+    .quick-btn small { font-size: 0.8em; font-weight: 600; color: var(--text-muted); }
+
+    /* Lists */
+    .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .list-item:last-child { border: none; padding-bottom: 0; }
+    .li-title { font-weight: 600; }
+    .li-sub { font-size: 0.8em; color: var(--text-muted); }
+    .li-amt { font-weight: bold; color: var(--danger); }
+    .li-amt.positive { color: var(--success); }
+
+    /* Bottom Nav */
+    .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px; padding-bottom: max(10px, env(safe-area-inset-bottom)); box-shadow: 0 -4px 10px rgba(0,0,0,0.05); z-index: 100;}
+    .nav-item { text-align: center; color: var(--text-muted); font-size: 0.75em; padding: 8px 20px; border-radius: 8px; cursor: pointer; }
+    .nav-item.active { color: var(--primary); background: #eff6ff; font-weight: bold; }
+    .nav-item svg { display: block; margin: 0 auto 4px auto; width: 20px; height: 20px; }
+
     .hidden { display: none !important; }
     
-    .history-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; font-size: 0.9em; }
-    .history-item:last-child { border: none; }
-    .h-name { font-weight: bold; color: var(--dark); }
-    .h-time { font-size: 0.8em; color: var(--gray); }
-    .h-amt { font-weight: bold; color: var(--danger); }
+    /* Toggle Switch */
+    .switch { position: relative; display: inline-block; width: 40px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .2s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .2s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--primary); }
+    input:checked + .slider:before { transform: translateX(16px); }
 </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
-        <h1>Auto Planner</h1>
-        <p>Smart rollovers. Zero maintenance.</p>
+<!-- ONBOARDING FLOW -->
+<div id="onboarding-view" class="container hidden">
+    <div class="card" id="step-1">
+        <h2>Welcome to Auto Planner</h2>
+        <p>Let's build a budget that runs itself. We'll start with your income.</p>
+        <div class="input-group">
+            <label>Monthly Salary (Net)</label>
+            <input type="number" id="setup-salary" placeholder="₹ e.g. 65000">
+        </div>
+        <div class="input-group">
+            <label>Salary Credit Date</label>
+            <input type="number" id="setup-payday" placeholder="Day of month (1-31)">
+        </div>
+        <button class="primary" onclick="nextStep(2)">Continue</button>
     </div>
 
-    <!-- 1-Time Setup -->
-    <div id="setup-view" class="card hidden">
-        <h3 style="margin-top:0;">One-Time Setup</h3>
-        <p style="font-size:0.85em; color:var(--gray);">Set it once. It runs automatically every month.</p>
+    <div class="card hidden" id="step-2">
+        <h2>Your Commitments</h2>
+        <p>Money you absolutely must lock away or pay every month.</p>
+        <div class="input-group">
+            <label>Monthly Savings Goal</label>
+            <input type="number" id="setup-savings" placeholder="₹ e.g. 15000">
+        </div>
         
-        <label style="font-size:0.8em; color:var(--gray); font-weight:bold;">Monthly Salary (₹)</label>
-        <input type="number" id="s-salary" placeholder="50000">
+        <h3 style="font-size:1em; margin-top:20px; border-bottom:1px solid var(--border); padding-bottom:5px;">Recurring Bills</h3>
+        <div id="setup-bills-list"></div>
         
-        <label style="font-size:0.8em; color:var(--gray); font-weight:bold;">Payday (Date 1-31)</label>
-        <input type="number" id="s-date" placeholder="1">
+        <div class="grid-2" style="margin-top: 15px;">
+            <input type="text" id="setup-bill-name" placeholder="e.g. Netflix">
+            <input type="number" id="setup-bill-amt" placeholder="₹ Amount">
+        </div>
+        <button class="outline" style="margin-top:10px; padding:8px;" onclick="addSetupBill()">+ Add Bill</button>
         
-        <label style="font-size:0.8em; color:var(--gray); font-weight:bold;">Savings + Fixed Bills (₹)</label>
-        <input type="number" id="s-fixed" placeholder="20000 (Rent + EMI + Savings)">
-        
-        <label style="font-size:0.8em; color:var(--gray); font-weight:bold;">Base Daily Allowance (₹)</label>
-        <input type="number" id="s-daily" placeholder="150 (For tea, snacks, transit)">
-        
-        <button class="primary-btn" onclick="saveSetup()">Initialize System</button>
+        <button class="primary" style="margin-top: 25px;" onclick="nextStep(3)">Continue</button>
     </div>
 
-    <!-- Main App -->
-    <div id="app-view" class="hidden">
-        
-        <!-- The Dynamic Daily Board -->
-        <div class="card daily-board positive" id="board">
-            <div class="daily-label" id="board-label">Available to Spend Today</div>
-            <div class="daily-amount" id="display-daily">₹0</div>
-            <div class="rollover-badge" id="display-rollover">Includes ₹0 saved from yesterday</div>
+    <div class="card hidden" id="step-3">
+        <h2>Daily Allowance</h2>
+        <p>How much do you need daily for Chai, snacks, transit, and spontaneous small spends?</p>
+        <div class="input-group">
+            <label>Daily Allowance Target</label>
+            <input type="number" id="setup-daily" placeholder="₹ e.g. 150">
+        </div>
+        <div class="list-item" style="background:#eff6ff; padding:15px; border-radius:8px;">
+            <div>
+                <div class="li-title">Smart Rollover</div>
+                <div class="li-sub">Unspent daily money rolls to tomorrow.</div>
+            </div>
+            <div style="font-size:1.5em;">🔄</div>
+        </div>
+        <button class="primary" style="margin-top: 20px;" onclick="finishSetup()">Complete Setup</button>
+    </div>
+</div>
+
+
+<!-- APP VIEWS -->
+<div id="app-container" class="hidden">
+    
+    <!-- DASHBOARD VIEW -->
+    <div id="dashboard-view" class="container view-section">
+        <div class="card board positive" id="dash-board">
+            <div class="board-label" id="dash-label">Today's Allowance</div>
+            <div class="board-amount" id="dash-daily-amt">₹0</div>
+            <div style="font-size: 0.8em; opacity: 0.8;" id="dash-rollover">Includes ₹0 rollover</div>
         </div>
 
-        <!-- Quick 1-Tap Actions -->
-        <div class="quick-actions">
-            <div class="quick-btn" onclick="quickAdd('Tea/Coffee', 20)">
-                <span>☕</span><small>₹20</small>
-            </div>
-            <div class="quick-btn" onclick="quickAdd('Snacks', 50)">
-                <span>🥪</span><small>₹50</small>
-            </div>
-            <div class="quick-btn" onclick="quickAdd('Transit', 30)">
-                <span>🛺</span><small>₹30</small>
-            </div>
+        <div class="quick-grid" style="margin-bottom: 16px;">
+            <div class="quick-btn" onclick="quickAdd('Snacks', 50)"><span>🥪</span><small>₹50</small></div>
+            <div class="quick-btn" onclick="quickAdd('Tea/Coffee', 20)"><span>☕</span><small>₹20</small></div>
+            <div class="quick-btn" onclick="quickAdd('Transit', 30)"><span>🛺</span><small>₹30</small></div>
         </div>
 
         <div class="card">
             <div class="grid-2">
                 <div class="stat-box">
                     <label>Big Purchase Fund</label>
-                    <div class="val" style="color: #9b59b6;" id="display-fund">₹0</div>
+                    <div class="val" style="color: #8b5cf6;" id="dash-fund">₹0</div>
                 </div>
                 <div class="stat-box">
-                    <label>Days to Payday</label>
-                    <div class="val" id="display-days">0</div>
+                    <label>Days Left</label>
+                    <div class="val" id="dash-days">0</div>
                 </div>
             </div>
             
-            <button class="primary-btn" style="margin-top:15px; background: #2c3e50;" onclick="document.getElementById('custom-expense').classList.toggle('hidden')">
-                + Add Custom Expense
-            </button>
+            <button class="outline" style="margin-top:15px;" onclick="document.getElementById('custom-expense-area').classList.toggle('hidden')">+ Custom Expense</button>
             
-            <div id="custom-expense" class="hidden" style="margin-top: 15px; padding-top:15px; border-top:1px solid #eee;">
-                <input type="text" id="c-name" placeholder="What did you buy?">
-                <input type="number" id="c-amt" placeholder="Amount (₹)">
-                <select id="c-type">
-                    <option value="daily">Deduct from Daily Allowance</option>
-                    <option value="big">Deduct from Big Purchase Fund</option>
-                </select>
-                <button class="primary-btn" onclick="addCustom()">Save</button>
+            <div id="custom-expense-area" class="hidden" style="margin-top: 15px; padding-top:15px; border-top:1px solid var(--border);">
+                <div class="input-group">
+                    <input type="text" id="c-name" placeholder="Item Name">
+                </div>
+                <div class="input-group">
+                    <input type="number" id="c-amt" placeholder="Amount (₹)">
+                </div>
+                <div class="input-group">
+                    <select id="c-type">
+                        <option value="daily">Deduct from Daily Allowance</option>
+                        <option value="big">Deduct from Big Purchase Fund</option>
+                    </select>
+                </div>
+                <button class="primary" onclick="addCustomExpense()">Save Expense</button>
             </div>
         </div>
 
         <div class="card">
-            <h4 style="margin:0 0 10px 0; color:var(--gray);">Today's Activity</h4>
-            <div id="history-list"></div>
-            <div style="text-align:center; margin-top:15px;">
-                <button onclick="factoryReset()" style="background:none; border:none; color:var(--danger); font-size:0.8em; text-decoration:underline;">Factory Reset</button>
+            <h3>Today's Activity</h3>
+            <div id="dash-history"></div>
+        </div>
+    </div>
+
+
+    <!-- SETTINGS VIEW -->
+    <div id="settings-view" class="container view-section hidden">
+        <h2 style="margin-bottom: 20px;">Configuration</h2>
+        
+        <div class="card">
+            <h3>Core Metrics</h3>
+            <p>Changes apply instantly to your current cycle.</p>
+            <div class="input-group">
+                <label>Monthly Salary</label>
+                <input type="number" id="set-salary" onchange="updateCoreSettings()">
+            </div>
+            <div class="input-group">
+                <label>Payday (Date)</label>
+                <input type="number" id="set-payday" onchange="updateCoreSettings()">
+            </div>
+            <div class="input-group">
+                <label>Savings Goal</label>
+                <input type="number" id="set-savings" onchange="updateCoreSettings()">
+            </div>
+            <div class="input-group">
+                <label>Daily Allowance Target</label>
+                <input type="number" id="set-daily" onchange="updateCoreSettings()">
             </div>
         </div>
 
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 style="margin:0;">Recurring Bills</h3>
+                <button style="width:auto; padding: 6px 12px; background:var(--surface); border:1px solid var(--border); border-radius:6px;" onclick="document.getElementById('add-bill-area').classList.toggle('hidden')">+ Add</button>
+            </div>
+            
+            <div id="add-bill-area" class="hidden" style="background:#f8fafc; padding:15px; border-radius:10px; margin-bottom:15px;">
+                <input type="text" id="new-bill-name" placeholder="Bill Name (e.g. Gym)" style="margin-bottom:10px;">
+                <input type="number" id="new-bill-amt" placeholder="Amount" style="margin-bottom:10px;">
+                <button class="primary" onclick="addNewBillToSettings()">Save Bill</button>
+            </div>
+
+            <div id="settings-bills-list"></div>
+        </div>
+
+        <button class="danger" style="margin-bottom: 30px;" onclick="factoryReset()">Erase All Data</button>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="nav-bar">
+        <div class="nav-item active" id="nav-dash" onclick="switchTab('dashboard')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+            Dashboard
+        </div>
+        <div class="nav-item" id="nav-set" onclick="switchTab('settings')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            Settings
+        </div>
     </div>
 </div>
 
 <script>
-    const STORAGE_KEY = 'auto_planner_v3';
-    let data = {
-        salary: 0,
-        payday: 1,
-        fixed: 0,
-        baseDaily: 0,
-        rolloverPool: 0, // Money saved from previous days
-        lastUpdatedDate: null, 
-        currentCycleMonth: null,
-        expenses: []
+    const DB_KEY = 'auto_planner_pro_v1';
+    let state = {
+        salary: null,
+        payday: null,
+        savings: null,
+        baseDaily: null,
+        bills: [], // {id, name, amount, active: boolean}
+        rolloverPool: 0,
+        lastUpdated: null,
+        cycleMonth: null,
+        expenses: [] // {id, name, amt, type(daily/big), ts}
     };
 
+    // --- INIT & CORE LOGIC ---
     function init() {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if(stored) {
-            data = JSON.parse(stored);
-            document.getElementById('setup-view').classList.add('hidden');
-            document.getElementById('app-view').classList.remove('hidden');
-            processTimePassage(); // The magic function
-            updateUI();
+        const stored = localStorage.getItem(DB_KEY);
+        if (stored) {
+            state = JSON.parse(stored);
+            document.getElementById('onboarding-view').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+            processTime();
+            renderDashboard();
         } else {
-            document.getElementById('setup-view').classList.remove('hidden');
-            document.getElementById('app-view').classList.add('hidden');
+            document.getElementById('onboarding-view').classList.remove('hidden');
         }
     }
 
-    function saveSetup() {
-        data.salary = parseFloat(document.getElementById('s-salary').value);
-        data.payday = parseInt(document.getElementById('s-date').value);
-        data.fixed = parseFloat(document.getElementById('s-fixed').value);
-        data.baseDaily = parseFloat(document.getElementById('s-daily').value);
-        
-        if(!data.salary || !data.payday || isNaN(data.fixed) || isNaN(data.baseDaily)) {
-            alert("Fill all fields"); return;
-        }
-
-        // Initialize time tracking
+    function processTime() {
         const todayStr = new Date().toDateString();
-        data.lastUpdatedDate = todayStr;
-        data.currentCycleMonth = getCycleMonth();
-        data.rolloverPool = 0;
-        data.expenses = [];
+        if (state.lastUpdated === todayStr) return;
 
-        saveData();
-        init();
-    }
-
-    // --- THE AUTOMATION ENGINE ---
-    // This runs every time the app opens to check what happened while it was closed.
-    function processTimePassage() {
-        const today = new Date();
-        const todayStr = today.toDateString();
-        
-        if (data.lastUpdatedDate === todayStr) return; // Already updated today
-
-        // 1. Check for Payday Reset (Did a new month start?)
-        const activeCycleMonth = getCycleMonth();
-        if (activeCycleMonth !== data.currentCycleMonth) {
-            // HAPPY PAYDAY! Reset everything automatically.
-            data.currentCycleMonth = activeCycleMonth;
-            data.rolloverPool = 0; // Reset rollover, start fresh
-            data.expenses = [];
-            data.lastUpdatedDate = todayStr;
-            saveData();
-            alert("Happy Payday! Your budgets have been automatically reset for the new month.");
+        const currentMonth = getCycleMonth();
+        if (state.cycleMonth !== currentMonth) {
+            // New Cycle!
+            state.cycleMonth = currentMonth;
+            state.rolloverPool = 0;
+            state.expenses = [];
+            state.lastUpdated = todayStr;
+            saveState();
             return;
         }
 
-        // 2. Process Rollovers for missed days
-        const lastDate = new Date(data.lastUpdatedDate);
-        // Calculate days between last open and today (ignoring time of day)
-        const diffTime = Math.abs(today - lastDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const lastDate = new Date(state.lastUpdated);
+        const today = new Date();
+        const diffDays = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
         
         if (diffDays > 0) {
-            // For every day that passed, calculate what was left of the allowance and add it to the pool
             for(let i = 0; i < diffDays; i++) {
-                // Determine expenses for that specific past day
-                let checkDate = new Date(lastDate);
-                checkDate.setDate(lastDate.getDate() + i);
+                let targetDate = new Date(lastDate);
+                targetDate.setDate(lastDate.getDate() + i);
                 
-                let spentOnDay = data.expenses
-                    .filter(e => new Date(e.timestamp).toDateString() === checkDate.toDateString() && e.type === 'daily')
-                    .reduce((sum, e) => sum + e.amount, 0);
+                let spentOnTarget = state.expenses
+                    .filter(e => new Date(e.ts).toDateString() === targetDate.toDateString() && e.type === 'daily')
+                    .reduce((sum, e) => sum + e.amt, 0);
                 
-                let leftover = data.baseDaily - spentOnDay;
-                data.rolloverPool += leftover; 
+                let leftover = state.baseDaily - spentOnTarget;
+                state.rolloverPool += leftover;
             }
-            data.lastUpdatedDate = todayStr;
-            saveData();
         }
+        state.lastUpdated = todayStr;
+        saveState();
     }
 
     function getCycleMonth() {
         const d = new Date();
-        if (d.getDate() >= data.payday) return d.getMonth(); // Current month
-        return d.getMonth() === 0 ? 11 : d.getMonth() - 1; // Previous month
+        if (d.getDate() >= state.payday) return d.getMonth();
+        return d.getMonth() === 0 ? 11 : d.getMonth() - 1;
     }
 
     function getDaysToPayday() {
         const today = new Date();
-        let nextPayday = new Date(today.getFullYear(), today.getMonth(), data.payday);
-        
-        // If today is past the payday, next payday is next month
-        if (today.getDate() >= data.payday) {
-            nextPayday.setMonth(nextPayday.getMonth() + 1);
-        }
-        
-        const diffTime = Math.abs(nextPayday - today);
-        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        let next = new Date(today.getFullYear(), today.getMonth(), state.payday);
+        if (today.getDate() >= state.payday) next.setMonth(next.getMonth() + 1);
+        return Math.ceil(Math.abs(next - today) / (1000 * 60 * 60 * 24));
     }
 
-    function updateUI() {
+    // --- ONBOARDING FLOW ---
+    let tempBills = [];
+    function nextStep(n) {
+        document.querySelectorAll('#onboarding-view .card').forEach(c => c.classList.add('hidden'));
+        document.getElementById(`step-${n}`).classList.remove('hidden');
+    }
+    
+    function addSetupBill() {
+        const name = document.getElementById('setup-bill-name').value;
+        const amt = parseFloat(document.getElementById('setup-bill-amt').value);
+        if(name && amt) {
+            tempBills.push({ id: Date.now(), name, amount: amt, active: true });
+            document.getElementById('setup-bill-name').value = '';
+            document.getElementById('setup-bill-amt').value = '';
+            renderSetupBills();
+        }
+    }
+
+    function renderSetupBills() {
+        const list = document.getElementById('setup-bills-list');
+        list.innerHTML = '';
+        tempBills.forEach((b, index) => {
+            list.innerHTML += `
+                <div class="list-item">
+                    <div><div class="li-title">${b.name}</div></div>
+                    <div>₹${b.amount} <button style="width:auto; padding:2px 8px; font-size:0.8em; margin-left:10px;" class="danger" onclick="tempBills.splice(${index},1); renderSetupBills()">X</button></div>
+                </div>`;
+        });
+    }
+
+    function finishSetup() {
+        state.salary = parseFloat(document.getElementById('setup-salary').value);
+        state.payday = parseInt(document.getElementById('setup-payday').value);
+        state.savings = parseFloat(document.getElementById('setup-savings').value) || 0;
+        state.baseDaily = parseFloat(document.getElementById('setup-daily').value);
+        state.bills = tempBills;
+        
+        if(!state.salary || !state.payday || !state.baseDaily) return alert("Fill required fields.");
+        
+        state.lastUpdated = new Date().toDateString();
+        state.cycleMonth = getCycleMonth();
+        saveState();
+        
+        document.getElementById('onboarding-view').classList.add('hidden');
+        document.getElementById('app-container').classList.remove('hidden');
+        renderDashboard();
+    }
+
+    // --- DASHBOARD ---
+    function renderDashboard() {
         const todayStr = new Date().toDateString();
         
-        // Calculate Today's Available Allowance
-        const spentToday = data.expenses
-            .filter(e => new Date(e.timestamp).toDateString() === todayStr && e.type === 'daily')
-            .reduce((sum, e) => sum + e.amount, 0);
+        // 1. Daily Math
+        const spentToday = state.expenses
+            .filter(e => new Date(e.ts).toDateString() === todayStr && e.type === 'daily')
+            .reduce((sum, e) => sum + e.amt, 0);
         
-        const availableToday = data.baseDaily + data.rolloverPool - spentToday;
-
-        // Calculate Big Purchase Fund
-        // Fund = Salary - Fixed - (Total Days in Cycle * baseDaily)
-        const daysInCycle = 30; // Approximation for simplicity in frontend
-        const totalDailyBudget = daysInCycle * data.baseDaily;
-        const spentOnBig = data.expenses
-            .filter(e => e.type === 'big')
-            .reduce((sum, e) => sum + e.amount, 0);
+        const availableToday = state.baseDaily + state.rolloverPool - spentToday;
         
-        const fund = data.salary - data.fixed - totalDailyBudget - spentOnBig;
-
-        // Update Board
-        const board = document.getElementById('board');
-        const dAmt = document.getElementById('display-daily');
-        const dLabel = document.getElementById('board-label');
-        const rBadge = document.getElementById('display-rollover');
-
-        dAmt.innerText = '₹' + Math.abs(availableToday);
+        const board = document.getElementById('dash-board');
+        document.getElementById('dash-daily-amt').innerText = '₹' + Math.abs(availableToday);
         
-        if (availableToday < 0) {
-            board.className = 'card daily-board negative';
-            dLabel.innerText = "Over Budget By";
-            rBadge.innerText = "Tomorrow's allowance will be reduced.";
+        if(availableToday < 0) {
+            board.className = 'card board negative';
+            document.getElementById('dash-label').innerText = 'Over Daily Limit';
         } else {
-            board.className = 'card daily-board positive';
-            dLabel.innerText = "Available to Spend Today";
-            if (data.rolloverPool > 0) {
-                rBadge.innerText = `Includes ₹${data.rolloverPool} saved up`;
-                rBadge.style.display = 'inline-block';
-            } else {
-                rBadge.style.display = 'none';
-            }
+            board.className = 'card board positive';
+            document.getElementById('dash-label').innerText = "Today's Allowance";
         }
+        document.getElementById('dash-rollover').innerText = `Includes ₹${state.rolloverPool} from previous days`;
 
-        document.getElementById('display-fund').innerText = '₹' + fund;
-        document.getElementById('display-days').innerText = getDaysToPayday();
+        // 2. Fund Math
+        const activeBillsTotal = state.bills.filter(b => b.active).reduce((sum, b) => sum + b.amount, 0);
+        const totalDailyReq = 30 * state.baseDaily;
+        const spentBig = state.expenses.filter(e => e.type === 'big').reduce((sum, e) => sum + e.amt, 0);
+        
+        const fund = state.salary - state.savings - activeBillsTotal - totalDailyReq - spentBig;
+        
+        document.getElementById('dash-fund').innerText = '₹' + fund;
+        document.getElementById('dash-days').innerText = getDaysToPayday();
 
-        // Render History
-        const list = document.getElementById('history-list');
-        list.innerHTML = '';
-        const todaysExpenses = data.expenses
-            .filter(e => new Date(e.timestamp).toDateString() === todayStr)
-            .sort((a, b) => b.timestamp - a.timestamp);
-            
-        if(todaysExpenses.length === 0) {
-            list.innerHTML = '<p style="color:var(--gray); text-align:center; font-size:0.9em;">No expenses yet today.</p>';
+        // 3. History
+        const hist = document.getElementById('dash-history');
+        const todaysExp = state.expenses.filter(e => new Date(e.ts).toDateString() === todayStr).sort((a,b)=>b.ts-a.ts);
+        
+        if(todaysExp.length === 0) {
+            hist.innerHTML = '<p style="text-align:center;">No expenses today.</p>';
         } else {
-            todaysExpenses.forEach(e => {
-                const time = new Date(e.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                list.innerHTML += `
-                    <div class="history-item">
-                        <div>
-                            <div class="h-name">${e.name}</div>
-                            <div class="h-time">${time} • ${e.type==='daily' ? 'Daily' : 'Big Fund'}</div>
-                        </div>
-                        <div class="h-amt">-₹${e.amount}</div>
+            hist.innerHTML = todaysExp.map(e => `
+                <div class="list-item">
+                    <div>
+                        <div class="li-title">${e.name}</div>
+                        <div class="li-sub">${e.type === 'daily' ? 'Daily' : 'Big Fund'}</div>
                     </div>
-                `;
-            });
+                    <div class="li-amt">-₹${e.amt}</div>
+                </div>
+            `).join('');
         }
     }
 
-    function quickAdd(name, amount) {
-        addRecord(name, amount, 'daily');
+    function quickAdd(name, amt) {
+        state.expenses.push({ id: Date.now(), name, amt, type: 'daily', ts: Date.now() });
+        saveState(); renderDashboard();
     }
 
-    function addCustom() {
+    function addCustomExpense() {
         const name = document.getElementById('c-name').value;
         const amt = parseFloat(document.getElementById('c-amt').value);
         const type = document.getElementById('c-type').value;
-        if(name && amt > 0) {
-            addRecord(name, amt, type);
-            document.getElementById('c-name').value = '';
-            document.getElementById('c-amt').value = '';
-            document.getElementById('custom-expense').classList.add('hidden');
+        if(name && amt) {
+            state.expenses.push({ id: Date.now(), name, amt, type, ts: Date.now() });
+            document.getElementById('c-name').value = ''; document.getElementById('c-amt').value = '';
+            document.getElementById('custom-expense-area').classList.add('hidden');
+            saveState(); renderDashboard();
         }
     }
 
-    function addRecord(name, amount, type) {
-        data.expenses.push({
-            id: Date.now(),
-            name, amount, type,
-            timestamp: new Date().getTime()
-        });
-        saveData();
-        updateUI();
+    // --- SETTINGS ---
+    function renderSettings() {
+        document.getElementById('set-salary').value = state.salary;
+        document.getElementById('set-payday').value = state.payday;
+        document.getElementById('set-savings').value = state.savings;
+        document.getElementById('set-daily').value = state.baseDaily;
+        
+        renderSettingsBills();
     }
 
-    function saveData() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    function updateCoreSettings() {
+        state.salary = parseFloat(document.getElementById('set-salary').value) || state.salary;
+        state.payday = parseInt(document.getElementById('set-payday').value) || state.payday;
+        state.savings = parseFloat(document.getElementById('set-savings').value) || 0;
+        state.baseDaily = parseFloat(document.getElementById('set-daily').value) || state.baseDaily;
+        saveState();
     }
 
-    function factoryReset() {
-        if(confirm("Wipe everything and start over?")) {
-            localStorage.removeItem(STORAGE_KEY);
-            location.reload();
+    function renderSettingsBills() {
+        const list = document.getElementById('settings-bills-list');
+        list.innerHTML = state.bills.map(b => `
+            <div class="list-item">
+                <div>
+                    <div class="li-title ${!b.active ? 'strike' : ''}" style="${!b.active ? 'text-decoration:line-through; color:var(--text-muted);' : ''}">${b.name}</div>
+                    <div class="li-sub">₹${b.amount}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:15px;">
+                    <label class="switch">
+                        <input type="checkbox" ${b.active ? 'checked' : ''} onchange="toggleBill(${b.id})">
+                        <span class="slider"></span>
+                    </label>
+                    <button class="danger" style="width:auto; padding: 4px 8px;" onclick="deleteBill(${b.id})">X</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function addNewBillToSettings() {
+        const name = document.getElementById('new-bill-name').value;
+        const amt = parseFloat(document.getElementById('new-bill-amt').value);
+        if(name && amt) {
+            state.bills.push({ id: Date.now(), name, amount: amt, active: true });
+            document.getElementById('new-bill-name').value = '';
+            document.getElementById('new-bill-amt').value = '';
+            document.getElementById('add-bill-area').classList.add('hidden');
+            saveState(); renderSettingsBills();
         }
     }
+
+    function toggleBill(id) {
+        const bill = state.bills.find(b => b.id === id);
+        if(bill) bill.active = !bill.active;
+        saveState(); renderSettingsBills();
+    }
+    
+    function deleteBill(id) {
+        state.bills = state.bills.filter(b => b.id !== id);
+        saveState(); renderSettingsBills();
+    }
+
+    // --- UTILS ---
+    function switchTab(tab) {
+        document.querySelectorAll('.view-section').forEach(v => v.classList.add('hidden'));
+        document.querySelectorAll('.nav-item').forEach(v => v.classList.remove('active'));
+        
+        document.getElementById(`${tab}-view`).classList.remove('hidden');
+        
+        if(tab === 'dashboard') {
+            document.getElementById('nav-dash').classList.add('active');
+            renderDashboard();
+        } else if(tab === 'settings') {
+            document.getElementById('nav-set').classList.add('active');
+            renderSettings();
+        }
+    }
+
+    function saveState() { localStorage.setItem(DB_KEY, JSON.stringify(state)); }
+    function factoryReset() { if(confirm("Erase all data?")) { localStorage.removeItem(DB_KEY); location.reload(); } }
 
     init();
 </script>
