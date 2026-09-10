@@ -1,312 +1,391 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Salary Planner</title>
-<style>
-    :root {
-        --primary: #3498db;
-        --primary-hover: #2980b9;
-        --success: #27ae60;
-        --success-bg: #d4edda;
-        --success-text: #155724;
-        --danger: #c0392b;
-        --dark: #2c3e50;
-        --gray: #7f8c8d;
-        --light-bg: #f4f7f6;
-    }
-    body { 
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-        background: var(--light-bg); 
-        margin: 0; 
-        padding: 20px; 
-        color: #333; 
-    }
-    .container { 
-        max-width: 500px; 
-        margin: 0 auto; 
-        background: #fff; 
-        border-radius: 12px; 
-        padding: 25px; 
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-    }
-    h1 { text-align: center; color: var(--dark); margin-bottom: 5px; }
-    .subtitle { text-align: center; color: var(--gray); font-size: 0.85em; margin-bottom: 25px; }
-    
-    .card { background: #e8f4f8; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
-    .card.safe-spend { background: var(--success-bg); color: var(--success-text); text-align: center; padding: 20px; }
-    
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .stat { padding: 12px; background: #fff; border-radius: 8px; border: 1px solid #eee; text-align: center; }
-    .stat-title { font-size: 0.85em; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; }
-    .stat-value { font-size: 1.3em; font-weight: bold; color: var(--dark); margin-top: 5px; }
-    
-    button { 
-        background: var(--primary); 
-        color: #fff; 
-        border: none; 
-        padding: 12px 15px; 
-        width: 100%; 
-        border-radius: 8px; 
-        font-size: 1em; 
-        font-weight: bold;
-        cursor: pointer; 
-        margin-top: 10px; 
-        transition: background 0.2s;
-    }
-    button:hover { background: var(--primary-hover); }
-    button.secondary { background: #95a5a6; }
-    button.secondary:hover { background: #7f8c8d; }
-    button.action { background: #9b59b6; }
-    button.action:hover { background: #8e44ad; }
-    
-    label { font-weight: 500; font-size: 0.9em; display: block; margin-top: 10px; color: var(--dark); }
-    input, select { 
-        width: 100%; 
-        padding: 12px; 
-        margin: 5px 0 10px 0; 
-        border: 1px solid #ddd; 
-        border-radius: 8px; 
-        box-sizing: border-box; 
-        font-size: 1em;
-    }
-    input:focus, select:focus { outline: none; border-color: var(--primary); }
-    
-    .hidden { display: none; }
-    
-    .expense-list { margin-top: 25px; }
-    .expense-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
-    .expense-item:last-child { border-bottom: none; }
-    .expense-details strong { display: block; color: var(--dark); }
-    .expense-details span { color: var(--gray); font-size: 0.85em; }
-    .expense-amount { color: var(--danger); font-weight: bold; }
-    
-    .afford-result { text-align: center; font-size: 1.5em; font-weight: bold; margin-top: 15px; }
-    .afford-sub { font-size: 0.5em; font-weight: normal; color: var(--gray); display: block; margin-top: 5px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Salary Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        /* Custom scrollbar for expenses list */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
 </head>
-<body>
+<body class="text-gray-800 antialiased min-h-screen flex items-center justify-center p-4">
 
-<div class="container">
-    <h1>Smart Salary Planner</h1>
-    <div class="subtitle">A better way to budget than Pranay_September_2026_Expense_Tracker_With_Daily_Budget.xlsx</div>
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
+        
+        <!-- Header -->
+        <div class="bg-blue-600 p-6 text-white text-center">
+            <h1 class="text-2xl font-bold tracking-tight">Smart Salary Planner</h1>
+            <p class="text-blue-200 text-sm mt-1" id="month-indicator">Loading...</p>
+        </div>
 
-    <!-- Step 1: Initial Setup -->
-    <div id="setup-section">
-        <div class="card">
-            <h2>Welcome! Set your budget</h2>
-            <label>Monthly Salary (₹)</label>
-            <input type="number" id="salary-input" value="50000">
+        <!-- Step 1: Setup Section -->
+        <div id="setup-section" class="p-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Set your budget</h2>
             
-            <label>Savings Goal (₹)</label>
-            <input type="number" id="savings-input" value="10000">
+            <div id="error-message" class="hidden bg-red-100 text-red-700 p-3 rounded-lg text-sm mb-4">
+                Please enter a valid Salary and Savings Goal.
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Monthly Salary (₹)</label>
+                    <input type="number" id="salary-input" placeholder="e.g. 50000" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Savings Goal (₹)</label>
+                    <input type="number" id="savings-input" placeholder="e.g. 10000" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Already Spent This Month (₹)</label>
+                    <input type="number" id="initial-spent-input" value="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                    <p class="text-xs text-gray-500 mt-1">Leave as 0 if starting fresh this month.</p>
+                </div>
+                
+                <button onclick="startPlanner()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-md transition duration-200 ease-in-out transform hover:-translate-y-0.5 mt-2">
+                    Start Planning
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 2: Main Dashboard (Hidden initially) -->
+        <div id="dashboard-section" class="hidden p-6 bg-gray-50">
             
-            <label>Days in Month</label>
-            <input type="number" id="days-input" value="30">
+            <!-- Key Stats Grid -->
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm text-center">
+                    <p class="text-xs text-gray-500 uppercase tracking-wide font-semibold">Salary</p>
+                    <p class="text-lg font-bold text-gray-800 mt-1" id="display-salary">₹0</p>
+                </div>
+                <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm text-center">
+                    <p class="text-xs text-gray-500 uppercase tracking-wide font-semibold">Budget Limit</p>
+                    <p class="text-lg font-bold text-gray-800 mt-1" id="display-available">₹0</p>
+                </div>
+                <div class="bg-white p-3 rounded-xl border border-red-100 shadow-sm text-center">
+                    <p class="text-xs text-gray-500 uppercase tracking-wide font-semibold">Total Spent</p>
+                    <p class="text-lg font-bold text-red-500 mt-1" id="display-spent">₹0</p>
+                </div>
+                <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm text-center">
+                    <p class="text-xs text-gray-500 uppercase tracking-wide font-semibold">Remaining</p>
+                    <p class="text-lg font-bold text-gray-800 mt-1" id="display-remaining">₹0</p>
+                </div>
+            </div>
+
+            <!-- Safe Spend Highlight -->
+            <div class="bg-gradient-to-br from-green-400 to-green-600 p-6 rounded-2xl shadow-lg text-center text-white mb-6 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-20">
+                    <svg class="w-16 h-16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"></path></svg>
+                </div>
+                <h3 class="text-sm font-medium uppercase tracking-wider text-green-100">Today's Safe Spend</h3>
+                <p class="text-4xl font-extrabold my-2" id="display-safe-spend">₹0</p>
+                <p class="text-sm text-green-100 font-medium">Days Left in Month: <span id="display-days-left" class="font-bold bg-white bg-opacity-20 px-2 py-1 rounded">0</span></p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <button onclick="togglePanel('expense-panel')" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition shadow">
+                    + Add Expense
+                </button>
+                <button onclick="togglePanel('afford-panel')" class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2.5 rounded-lg transition shadow">
+                    Can I afford this?
+                </button>
+            </div>
+
+            <!-- Add Expense Panel (Hidden) -->
+            <div id="expense-panel" class="hidden bg-white p-4 rounded-xl border border-blue-200 shadow-md mb-6 transition-all">
+                <h3 class="font-bold text-gray-800 mb-3 border-b pb-2">Record New Expense</h3>
+                <div class="space-y-3">
+                    <input type="text" id="expense-name" placeholder="What did you buy? (e.g. Lunch)" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none">
+                    <input type="number" id="expense-amount" placeholder="Amount (₹)" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 outline-none">
+                    <div class="flex gap-2 pt-2">
+                        <button onclick="saveExpense()" class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">Save</button>
+                        <button onclick="togglePanel('expense-panel')" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Affordability Panel (Hidden) -->
+            <div id="afford-panel" class="hidden bg-white p-4 rounded-xl border border-purple-200 shadow-md mb-6 transition-all">
+                <h3 class="font-bold text-gray-800 mb-3 border-b pb-2">Can I afford this?</h3>
+                <div class="space-y-3">
+                    <input type="text" id="afford-name" placeholder="Item name (e.g. Shoes)" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-purple-500 outline-none">
+                    <input type="number" id="afford-price" placeholder="Price (₹)" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-purple-500 outline-none">
+                    
+                    <button onclick="checkAffordability()" class="w-full bg-purple-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">Check Now</button>
+                    
+                    <div id="afford-result" class="hidden mt-3 p-3 rounded-lg text-center"></div>
+                    
+                    <button onclick="closeAffordability()" class="w-full bg-gray-200 text-gray-700 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 mt-2">Close</button>
+                </div>
+            </div>
+
+            <!-- Recent Expenses -->
+            <div>
+                <h3 class="text-sm font-bold text-gray-600 uppercase mb-3">Recent Expenses</h3>
+                <div id="expenses-list" class="space-y-2 max-h-48 overflow-y-auto scrollbar-hide pb-4">
+                    <p class="text-sm text-gray-400 italic text-center py-4">No expenses recorded yet.</p>
+                </div>
+            </div>
             
-            <button onclick="startPlanner()">Start Planning</button>
         </div>
     </div>
 
-    <!-- Step 2: Main Dashboard -->
-    <div id="dashboard-section" class="hidden">
-        
-        <div class="grid">
-            <div class="stat">
-                <div class="stat-title">Salary</div>
-                <div class="stat-value" id="display-salary">₹0</div>
-            </div>
-            <div class="stat">
-                <div class="stat-title">Available Budget</div>
-                <div class="stat-value" id="display-available">₹0</div>
-            </div>
-            <div class="stat">
-                <div class="stat-title">Spent This Month</div>
-                <div class="stat-value" style="color: var(--danger);" id="display-spent">₹0</div>
-            </div>
-            <div class="stat">
-                <div class="stat-title">Remaining</div>
-                <div class="stat-value" id="display-remaining">₹0</div>
-            </div>
-        </div>
+    <script>
+        // Application State
+        let state = {
+            salary: 0,
+            savingsGoal: 0,
+            initialSpent: 0,
+            currentSpent: 0,
+            totalDays: 0,
+            daysLeft: 0,
+            expenses: []
+        };
 
-        <div class="card safe-spend" style="margin-top: 20px;">
-            <div class="stat-title" style="color: var(--success-text); font-weight: bold;">Today's Safe Spend</div>
-            <div class="stat-value" style="font-size: 2.5em; margin: 10px 0;" id="display-safe-spend">₹0</div>
-            <div class="stat-title" style="color: var(--success-text);">Days Left: <span id="display-days-left">0</span></div>
-        </div>
-
-        <div class="grid" style="margin-top: 20px;">
-            <button onclick="toggleSection('add-expense-section')">+ Add Expense</button>
-            <button onclick="toggleSection('afford-section')" class="action">Can I afford this?</button>
-        </div>
-
-        <!-- Add Expense Form (Hidden by default) -->
-        <div id="add-expense-section" class="card hidden" style="margin-top: 15px; border: 1px solid #3498db; background: #fff;">
-            <h3 style="margin-top:0;">Record an Expense</h3>
-            <label>Expense Name</label>
-            <input type="text" id="expense-name" placeholder="e.g. Lunch">
+        // Initialize Date Context
+        function initDateData() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth(); 
+            const currentDay = now.getDate();
             
-            <label>Amount (₹)</label>
-            <input type="number" id="expense-amount" placeholder="e.g. 150">
+            // Get total days in current month
+            const totalDaysInMonth = new Date(year, month + 1, 0).getDate();
             
-            <label>Category</label>
-            <select id="expense-category">
-                <option value="Food">Food & Dining</option>
-                <option value="Transport">Transportation</option>
-                <option value="Shopping">Shopping</option>
-                <option value="Bills">Bills & Utilities</option>
-                <option value="Entertainment">Entertainment</option>
-            </select>
+            // Calculate days left (including today)
+            const daysRemaining = totalDaysInMonth - currentDay + 1;
             
-            <div class="grid">
-                <button onclick="addExpense()">Save</button>
-                <button onclick="toggleSection('add-expense-section')" class="secondary">Cancel</button>
-            </div>
-        </div>
+            state.totalDays = totalDaysInMonth;
+            state.daysLeft = daysRemaining;
 
-        <!-- Affordability Calculator (Hidden by default) -->
-        <div id="afford-section" class="card hidden" style="margin-top: 15px; border: 1px solid #9b59b6; background: #fff;">
-            <h3 style="margin-top:0;">Can I afford this?</h3>
-            <label>What do you want to buy?</label>
-            <input type="text" id="afford-name" placeholder="e.g. New Shoes">
+            // Update UI Header
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            document.getElementById('month-indicator').innerText = `${monthNames[month]} ${year} • ${daysRemaining} days remaining`;
+        }
+
+        // Format currency helper
+        const formatMoney = (amount) => '₹' + amount.toLocaleString('en-IN');
+
+        // Start Planner (Process Setup Form)
+        function startPlanner() {
+            const salaryInput = parseFloat(document.getElementById('salary-input').value);
+            const savingsInput = parseFloat(document.getElementById('savings-input').value);
+            const spentInput = parseFloat(document.getElementById('initial-spent-input').value) || 0;
+            const errorMsg = document.getElementById('error-message');
+
+            // Validation
+            if (isNaN(salaryInput) || salaryInput <= 0 || isNaN(savingsInput) || savingsInput < 0) {
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            errorMsg.classList.add('hidden');
+
+            // Update State
+            state.salary = salaryInput;
+            state.savingsGoal = savingsInput;
+            state.initialSpent = spentInput;
+            state.currentSpent = spentInput; // Reset to initial on start
+
+            // Switch UI
+            document.getElementById('setup-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.remove('hidden');
+
+            // Initial calculation
+            updateDashboard();
+        }
+
+        // Update Dashboard Math & UI
+        function updateDashboard() {
+            const budgetAvailable = state.salary - state.savingsGoal;
+            const remaining = budgetAvailable - state.currentSpent;
             
-            <label>Price (₹)</label>
-            <input type="number" id="afford-price" placeholder="e.g. 3000">
+            // Calculate safe spend, flooring to whole numbers. 
+            // If remaining is negative, safe spend is 0.
+            let safeSpend = 0;
+            if (remaining > 0 && state.daysLeft > 0) {
+                safeSpend = Math.floor(remaining / state.daysLeft);
+            }
+
+            // Update DOM Elements
+            document.getElementById('display-salary').innerText = formatMoney(state.salary);
+            document.getElementById('display-available').innerText = formatMoney(budgetAvailable);
+            document.getElementById('display-spent').innerText = formatMoney(state.currentSpent);
+            document.getElementById('display-remaining').innerText = formatMoney(remaining);
             
-            <button onclick="checkAffordability()" class="action">Check Now</button>
-            <div id="afford-result" class="afford-result"></div>
+            const safeSpendEl = document.getElementById('display-safe-spend');
+            safeSpendEl.innerText = formatMoney(safeSpend);
             
-            <button onclick="closeAffordability()" class="secondary" style="margin-top: 15px;">Close</button>
-        </div>
-
-        <!-- Expense History -->
-        <div class="expense-list">
-            <h3 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">Recent Expenses</h3>
-            <div id="expense-items"></div>
-        </div>
-    </div>
-</div>
-
-<script>
-    // State variables
-    let salary = 0;
-    let savingsGoal = 0;
-    let totalDays = 0;
-    let spent = 0;
-    let expenses = [];
-    
-    // Hardcoded for demo: assuming 12 days have passed so 18 days left out of 30
-    let daysPassed = 12; 
-
-    function startPlanner() {
-        salary = parseFloat(document.getElementById('salary-input').value) || 0;
-        savingsGoal = parseFloat(document.getElementById('savings-input').value) || 0;
-        totalDays = parseInt(document.getElementById('days-input').value) || 30;
-        
-        // Hide setup, show dashboard
-        document.getElementById('setup-section').classList.add('hidden');
-        document.getElementById('dashboard-section').classList.remove('hidden');
-        
-        updateDashboard();
-    }
-
-    function updateDashboard() {
-        let budgetAvailable = salary - savingsGoal;
-        let remaining = budgetAvailable - spent;
-        let daysLeft = totalDays - daysPassed;
-        if(daysLeft < 1) daysLeft = 1; // Prevent division by zero
-        
-        let safeSpend = remaining / daysLeft;
-
-        document.getElementById('display-salary').innerText = '₹' + salary.toLocaleString();
-        document.getElementById('display-available').innerText = '₹' + budgetAvailable.toLocaleString();
-        document.getElementById('display-spent').innerText = '₹' + spent.toLocaleString();
-        document.getElementById('display-remaining').innerText = '₹' + remaining.toLocaleString();
-        
-        document.getElementById('display-safe-spend').innerText = '₹' + Math.floor(safeSpend).toLocaleString();
-        document.getElementById('display-days-left').innerText = daysLeft;
-        
-        renderExpenses();
-    }
-
-    function addExpense() {
-        let name = document.getElementById('expense-name').value;
-        let amount = parseFloat(document.getElementById('expense-amount').value) || 0;
-        let category = document.getElementById('expense-category').value;
-        
-        if(name.trim() !== '' && amount > 0) {
-            expenses.push({ name, amount, category });
-            spent += amount;
+            // Color code Safe Spend based on health
+            if(safeSpend <= 0) {
+                safeSpendEl.parentElement.classList.replace('from-green-400', 'from-red-500');
+                safeSpendEl.parentElement.classList.replace('to-green-600', 'to-red-700');
+            } else if (safeSpend < (budgetAvailable / state.totalDays) * 0.3) { // Warning if budget is getting very low
+                safeSpendEl.parentElement.classList.replace('from-green-400', 'from-yellow-400');
+                safeSpendEl.parentElement.classList.replace('to-green-600', 'to-yellow-600');
+            }
             
-            // Clear inputs
+            document.getElementById('display-days-left').innerText = state.daysLeft;
+
+            renderExpenses();
+        }
+
+        // Toggle panels helper
+        function togglePanel(panelId) {
+            const panel = document.getElementById(panelId);
+            if (panel.classList.contains('hidden')) {
+                panel.classList.remove('hidden');
+            } else {
+                panel.classList.add('hidden');
+            }
+            
+            // Auto close the other panel if one is opened
+            if (panelId === 'expense-panel') {
+                document.getElementById('afford-panel').classList.add('hidden');
+            } else if (panelId === 'afford-panel') {
+                document.getElementById('expense-panel').classList.add('hidden');
+            }
+        }
+
+        // Save New Expense
+        function saveExpense() {
+            const name = document.getElementById('expense-name').value;
+            const amount = parseFloat(document.getElementById('expense-amount').value);
+
+            if (!name || isNaN(amount) || amount <= 0) {
+                // Show a quick custom warning (avoiding alert)
+                const btn = event.target;
+                const originalText = btn.innerText;
+                btn.innerText = "Invalid Input!";
+                btn.classList.replace('bg-blue-600', 'bg-red-500');
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.classList.replace('bg-red-500', 'bg-blue-600');
+                }, 1500);
+                return;
+            }
+
+            // Add to state
+            state.expenses.unshift({ name, amount, date: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) });
+            state.currentSpent += amount;
+
+            // Reset inputs
             document.getElementById('expense-name').value = '';
             document.getElementById('expense-amount').value = '';
-            
-            toggleSection('add-expense-section');
+
+            // Close panel and update
+            togglePanel('expense-panel');
             updateDashboard();
-        } else {
-            alert('Please enter a valid expense name and amount.');
-        }
-    }
-
-    function checkAffordability() {
-        let price = parseFloat(document.getElementById('afford-price').value) || 0;
-        let budgetAvailable = salary - savingsGoal;
-        let remaining = budgetAvailable - spent;
-        
-        let resultDiv = document.getElementById('afford-result');
-        if (price <= remaining) {
-            resultDiv.innerHTML = `YES ✅<span class='afford-sub'>You can afford this without breaking your savings goal!</span>`;
-            resultDiv.style.color = "var(--success)";
-        } else {
-            resultDiv.innerHTML = `NO ❌<span class='afford-sub'>This exceeds your remaining safe budget. Wait until next month!</span>`;
-            resultDiv.style.color = "var(--danger)";
-        }
-    }
-
-    function closeAffordability() {
-        document.getElementById('afford-price').value = '';
-        document.getElementById('afford-name').value = '';
-        document.getElementById('afford-result').innerHTML = '';
-        toggleSection('afford-section');
-    }
-
-    function toggleSection(id) {
-        let el = document.getElementById(id);
-        if(el.classList.contains('hidden')) {
-            el.classList.remove('hidden');
-        } else {
-            el.classList.add('hidden');
-        }
-    }
-
-    function renderExpenses() {
-        let listDiv = document.getElementById('expense-items');
-        listDiv.innerHTML = '';
-        
-        if (expenses.length === 0) {
-            listDiv.innerHTML = '<p style="color: #999; text-align: center; font-style: italic;">No expenses recorded yet.</p>';
-            return;
         }
 
-        // Show expenses newest first
-        let recent = [...expenses].reverse();
-        
-        recent.forEach(exp => {
-            let item = document.createElement('div');
-            item.className = 'expense-item';
-            item.innerHTML = `
-                <div class="expense-details">
-                    <strong>${exp.name}</strong>
-                    <span>${exp.category}</span>
-                </div>
-                <div class="expense-amount">-₹${exp.amount.toLocaleString()}</div>
-            `;
-            listDiv.appendChild(item);
-        });
-    }
-</script>
+        // Check Affordability Feature
+        function checkAffordability() {
+            const itemName = document.getElementById('afford-name').value;
+            const price = parseFloat(document.getElementById('afford-price').value);
+            const resultDiv = document.getElementById('afford-result');
+
+            if (isNaN(price) || price <= 0) {
+                resultDiv.classList.remove('hidden', 'bg-green-100', 'bg-red-100');
+                resultDiv.classList.add('bg-gray-100', 'text-gray-700');
+                resultDiv.innerHTML = "Please enter a valid price.";
+                return;
+            }
+
+            const budgetAvailable = state.salary - state.savingsGoal;
+            const remaining = budgetAvailable - state.currentSpent;
+
+            resultDiv.classList.remove('hidden');
+            
+            if (price <= remaining) {
+                resultDiv.classList.remove('bg-red-100', 'text-red-700', 'bg-gray-100');
+                resultDiv.classList.add('bg-green-100', 'text-green-800');
+                resultDiv.innerHTML = `
+                    <div class="text-2xl font-bold mb-1">YES ✅</div>
+                    <div class="text-xs">You can afford ${itemName ? 'the ' + itemName : 'this'} without breaking your savings goal!</div>
+                `;
+            } else {
+                resultDiv.classList.remove('bg-green-100', 'text-green-800', 'bg-gray-100');
+                resultDiv.classList.add('bg-red-100', 'text-red-700');
+                resultDiv.innerHTML = `
+                    <div class="text-2xl font-bold mb-1">NO ❌</div>
+                    <div class="text-xs">This exceeds your remaining safe budget by ${formatMoney(price - remaining)}.</div>
+                `;
+            }
+        }
+
+        function closeAffordability() {
+            document.getElementById('afford-name').value = '';
+            document.getElementById('afford-price').value = '';
+            document.getElementById('afford-result').classList.add('hidden');
+            togglePanel('afford-panel');
+        }
+
+        // Render Expenses List
+        function renderExpenses() {
+            const listContainer = document.getElementById('expenses-list');
+            
+            if (state.expenses.length === 0) {
+                if (state.initialSpent > 0) {
+                    listContainer.innerHTML = `
+                        <div class="flex justify-between items-center p-3 bg-white rounded-lg border border-gray-100 shadow-sm">
+                            <div>
+                                <p class="font-semibold text-gray-800 text-sm">Initial Previous Spending</p>
+                            </div>
+                            <p class="font-bold text-red-500 text-sm">-${formatMoney(state.initialSpent)}</p>
+                        </div>
+                    `;
+                } else {
+                    listContainer.innerHTML = '<p class="text-sm text-gray-400 italic text-center py-4">No expenses recorded yet.</p>';
+                }
+                return;
+            }
+
+            let html = '';
+            
+            // Add initial spend if exists
+            if (state.initialSpent > 0) {
+                html += `
+                    <div class="flex justify-between items-center p-3 bg-white rounded-lg border border-gray-100 shadow-sm opacity-60">
+                        <div>
+                            <p class="font-semibold text-gray-800 text-sm">Initial Previous Spending</p>
+                        </div>
+                        <p class="font-bold text-red-500 text-sm">-${formatMoney(state.initialSpent)}</p>
+                    </div>
+                `;
+            }
+
+            // Map standard expenses
+            state.expenses.forEach(exp => {
+                html += `
+                    <div class="flex justify-between items-center p-3 bg-white rounded-lg border border-gray-100 shadow-sm">
+                        <div>
+                            <p class="font-semibold text-gray-800 text-sm">${exp.name}</p>
+                            <p class="text-xs text-gray-400">${exp.date}</p>
+                        </div>
+                        <p class="font-bold text-red-500 text-sm">-${formatMoney(exp.amount)}</p>
+                    </div>
+                `;
+            });
+
+            listContainer.innerHTML = html;
+        }
+
+        // Initialize setup on load
+        window.onload = initDateData;
+    </script>
 </body>
 </html>
